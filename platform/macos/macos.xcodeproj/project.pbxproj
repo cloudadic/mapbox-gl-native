@@ -24,7 +24,7 @@
 		3537CA741D3F93A600380318 /* MGLStyle_Private.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 3537CA731D3F93A600380318 /* MGLStyle_Private.hpp */; };
 		3538AA231D542685008EC33D /* MGLBaseStyleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 3538AA211D542685008EC33D /* MGLBaseStyleLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3538AA241D542685008EC33D /* MGLBaseStyleLayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3538AA221D542685008EC33D /* MGLBaseStyleLayer.mm */; };
-		355BA4ED1D41633E00CCC6D5 /* NSColor+MGLAdditions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 355BA4EB1D41633E00CCC6D5 /* NSColor+MGLAdditions.hpp */; settings = {ATTRIBUTES = (Public, ); }; };
+		355BA4ED1D41633E00CCC6D5 /* NSColor+MGLAdditions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 355BA4EB1D41633E00CCC6D5 /* NSColor+MGLAdditions.hpp */; };
 		355BA4EE1D41633E00CCC6D5 /* NSColor+MGLAdditions.mm in Sources */ = {isa = PBXBuildFile; fileRef = 355BA4EC1D41633E00CCC6D5 /* NSColor+MGLAdditions.mm */; };
 		35602BFA1D3EA99F0050646F /* MGLFillStyleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 35602BF81D3EA99F0050646F /* MGLFillStyleLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35602BFB1D3EA99F0050646F /* MGLFillStyleLayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 35602BF91D3EA99F0050646F /* MGLFillStyleLayer.mm */; };
