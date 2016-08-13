@@ -76,6 +76,7 @@ static_assert(mbgl::underlying_type(QMapboxGL::MapChangeDidFinishRenderingFrameF
 static_assert(mbgl::underlying_type(QMapboxGL::MapChangeWillStartRenderingMap) == mbgl::underlying_type(mbgl::MapChangeWillStartRenderingMap), "error");
 static_assert(mbgl::underlying_type(QMapboxGL::MapChangeDidFinishRenderingMap) == mbgl::underlying_type(mbgl::MapChangeDidFinishRenderingMap), "error");
 static_assert(mbgl::underlying_type(QMapboxGL::MapChangeDidFinishRenderingMapFullyRendered) == mbgl::underlying_type(mbgl::MapChangeDidFinishRenderingMapFullyRendered), "error");
+static_assert(mbgl::underlying_type(QMapboxGL::MapChangeSourceAttributionDidChange) == mbgl::underlying_type(mbgl::MapChangeSourceAttributionDidChange), "error");
 
 namespace {
 

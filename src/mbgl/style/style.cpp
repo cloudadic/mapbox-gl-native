@@ -14,6 +14,7 @@
 #include <mbgl/style/update_parameters.hpp>
 #include <mbgl/style/cascade_parameters.hpp>
 #include <mbgl/style/calculation_parameters.hpp>
+#include <mbgl/style/tile_source_impl.hpp>
 #include <mbgl/sprite/sprite_store.hpp>
 #include <mbgl/sprite/sprite_atlas.hpp>
 #include <mbgl/geometry/glyph_atlas.hpp>
@@ -22,6 +23,7 @@
 #include <mbgl/renderer/render_tile.hpp>
 #include <mbgl/util/constants.hpp>
 #include <mbgl/util/string.hpp>
+#include <mbgl/util/tileset.hpp>
 #include <mbgl/platform/log.hpp>
 #include <mbgl/math/minmax.hpp>
 
@@ -232,12 +234,40 @@ void Style::recalculate(float z, const TimePoint& timePoint, MapMode mode) {
     }
 }
 
+std::vector<const Source*> Style::getSources() const {
+    std::vector<const Source*> result;
+    result.reserve(sources.size());
+    for (const auto& source : sources) {
+        result.push_back(source.get());
+    }
+    return result;
+}
+
 Source* Style::getSource(const std::string& id) const {
     const auto it = std::find_if(sources.begin(), sources.end(), [&](const auto& source) {
         return source->getID() == id;
     });
 
     return it != sources.end() ? it->get() : nullptr;
+}
+
+std::vector<std::string> Style::getAttributions() const {
+    std::vector<std::string> result;
+    for (const auto& source : sources) {
+        switch (source->baseImpl->type) {
+        case SourceType::Vector:
+        case SourceType::Raster: {
+            style::TileSourceImpl* tileSource = static_cast<style::TileSourceImpl*>(source->baseImpl.get());
+            result.push_back(tileSource->getAttribution());
+        }
+            
+        case SourceType::GeoJSON:
+        case SourceType::Video:
+        case SourceType::Annotations:
+            break;
+        }
+    }
+    return result;
 }
 
 bool Style::hasTransitions() const {
@@ -410,6 +440,10 @@ void Style::onSourceError(Source& source, std::exception_ptr error) {
                source.getID().c_str(), util::toString(error).c_str());
     observer->onSourceError(source, error);
     observer->onResourceError(error);
+}
+
+void Style::onSourceAttributionChanged(Source& source, std::string attribution) {
+    observer->onSourceAttributionChanged(source, attribution);
 }
 
 void Style::onTileLoaded(Source& source, const OverscaledTileID& tileID, bool isNewTile) {

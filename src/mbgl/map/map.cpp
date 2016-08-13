@@ -37,6 +37,7 @@ class Map::Impl : public style::Observer {
 public:
     Impl(View&, FileSource&, MapMode, GLContextMode, ConstrainMode, ViewportMode);
 
+    void onSourceAttributionChanged(style::Source&, std::string) override;
     void onNeedsRepaint() override;
     void onResourceError(std::exception_ptr) override;
 
@@ -745,6 +746,10 @@ AnnotationIDs Map::queryPointAnnotations(const ScreenBox& box) {
 
 #pragma mark - Style API
 
+std::vector<const style::Source*> Map::getSources() const {
+    return impl->style ? impl->style->getSources() : std::vector<const style::Source*>();
+}
+
 style::Source* Map::getSource(const std::string& sourceID) {
     return impl->style ? impl->style->getSource(sourceID) : nullptr;
 }
@@ -755,6 +760,10 @@ void Map::addSource(std::unique_ptr<style::Source> source) {
 
 void Map::removeSource(const std::string& sourceID) {
     impl->style->removeSource(sourceID);
+}
+
+std::vector<std::string> Map::getAttributions() const {
+    return impl->style ? impl->style->getAttributions() : std::vector<std::string>();
 }
 
 style::Layer* Map::getLayer(const std::string& layerID) {
@@ -859,6 +868,10 @@ void Map::onLowMemory() {
     if (!impl->style) return;
     impl->style->onLowMemory();
     impl->view.invalidate();
+}
+
+void Map::Impl::onSourceAttributionChanged(style::Source&, std::string) {
+    view.notifyMapChange(MapChangeSourceAttributionDidChange);
 }
 
 void Map::Impl::onNeedsRepaint() {

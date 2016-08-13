@@ -58,9 +58,11 @@ public:
         return lastError;
     }
 
+    std::vector<const Source*> getSources() const;
     Source* getSource(const std::string& id) const;
     void addSource(std::unique_ptr<Source>);
     void removeSource(const std::string& sourceID);
+    std::vector<std::string> getAttributions() const;
 
     std::vector<const Layer*> getLayers() const;
     Layer* getLayer(const std::string& id) const;
@@ -111,6 +113,7 @@ private:
     // SourceObserver implementation.
     void onSourceLoaded(Source&) override;
     void onSourceError(Source&, std::exception_ptr) override;
+    void onSourceAttributionChanged(Source&, std::string) override;
     void onTileLoaded(Source&, const OverscaledTileID&, bool isNewTile) override;
     void onTileError(Source&, const OverscaledTileID&, std::exception_ptr) override;
     void onNeedsRepaint() override;

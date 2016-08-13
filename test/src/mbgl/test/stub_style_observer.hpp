@@ -6,7 +6,7 @@ using namespace mbgl;
 using namespace mbgl::style;
 
 /**
- * An implementation of style::Observer that forwards all methods to dynamically-settable lambas.
+ * An implementation of style::Observer that forwards all methods to dynamically-settable lambdas.
  */
 class StubStyleObserver : public style::Observer {
 public:
@@ -34,6 +34,10 @@ public:
         if (sourceError) sourceError(source, error);
     }
 
+    void onSourceAttributionChanged(Source& source, std::string attribution) override {
+        if (sourceAttributionChanged) sourceAttributionChanged(source, attribution);
+    }
+
     void onTileLoaded(Source& source, const OverscaledTileID& tileID, bool isNewTile) override {
         if (tileLoaded) tileLoaded(source, tileID, isNewTile);
     }
@@ -57,6 +61,7 @@ public:
     std::function<void (std::exception_ptr)> spriteError;
     std::function<void (Source&)> sourceLoaded;
     std::function<void (Source&, std::exception_ptr)> sourceError;
+    std::function<void (Source&, std::string)> sourceAttributionChanged;
     std::function<void (Source&, const OverscaledTileID&, bool isNewTile)> tileLoaded;
     std::function<void (Source&, const OverscaledTileID&, std::exception_ptr)> tileError;
     std::function<void ()> needsRepaint;

@@ -111,7 +111,8 @@ public:
         MapChangeDidFinishRenderingFrameFullyRendered,
         MapChangeWillStartRenderingMap,
         MapChangeDidFinishRenderingMap,
-        MapChangeDidFinishRenderingMapFullyRendered
+        MapChangeDidFinishRenderingMapFullyRendered,
+        MapChangeSourceAttributionDidChange
     };
 
     QMapboxGL(QObject *parent = 0, const QMapboxGLSettings& = QMapboxGLSettings());
