@@ -72,10 +72,11 @@ NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std:
                 return;
             }
             
-            NSAttributedString *title = [attributedString attributedSubstringFromRange:range];
+            NSAttributedString *title = [[attributedString attributedSubstringFromRange:range]
+                                         attributedStringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             
             // Omit whitespace-only strings.
-            if (![title.string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length) {
+            if (!title.length) {
                 return;
             }
             
