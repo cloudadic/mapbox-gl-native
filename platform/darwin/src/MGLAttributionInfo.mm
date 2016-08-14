@@ -24,6 +24,16 @@ static NSString * const MGLAttributionFeedbackURLString = @"https://www.mapbox.c
     return self;
 }
 
+- (BOOL)isEqual:(id)object {
+    return [object isKindOfClass:[self class]] && [[object title] isEqual:self.title] && [[object URL] isEqual:self.URL];
+}
+
+- (NSUInteger)hash {
+    return self.title.hash + self.URL.hash;
+}
+
+@end
+
 NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std::vector<std::string> htmlStrings, NSString *css) {
     NSMutableArray *infos = [NSMutableArray array];
     NSDictionary *options = @{
@@ -69,18 +79,23 @@ NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std:
                 return;
             }
             
-            // Omit redundant attribution strings.
-            for (MGLAttributionInfo *info in infos) {
-                if ([info.title.string containsString:title.string]) {
-                    return;
+            // Add the attribution info to the list, but only if it isn’t redundant to an existing item. If it contains the title of an existing item, replace that item.
+            __block MGLAttributionInfo *info = [[MGLAttributionInfo alloc] initWithTitle:title URL:value];
+            [infos enumerateObjectsUsingBlock:^(MGLAttributionInfo * _Nonnull otherInfo, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSString *otherString = otherInfo.title.string;
+                if ([title.string containsString:otherString]) {
+                    [infos replaceObjectAtIndex:idx withObject:info];
+                    info = nil;
+                    *stop = YES;
+                } else if ([otherString containsString:title.string]) {
+                    info = nil;
+                    *stop = YES;
                 }
+            }];
+            if (info) {
+                [infos addObject:info];
             }
-            
-            MGLAttributionInfo *info = [[MGLAttributionInfo alloc] initWithTitle:title URL:value];
-            [infos addObject:info];
         }];
     }
     return infos;
 }
-
-@end
