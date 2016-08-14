@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface MGLAttributionInfo : NSObject
 
-- (instancetype)initWithTitle:(NSAttributedString *)title URL:(NSURL *)URL;
+- (instancetype)initWithTitle:(NSAttributedString *)title URL:(nullable NSURL *)URL;
 
 @property (nonatomic) NSAttributedString *title;
 @property (nonatomic, nullable) NSURL *URL;
