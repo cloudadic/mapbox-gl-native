@@ -54,11 +54,7 @@ NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std:
                                      inRange:attributedString.mgl_wholeRange
                                      options:0
                                   usingBlock:^(id _Nullable value, NSRange range, BOOL * _Nonnull stop) {
-            if (!value) {
-                return;
-            }
-            
-            NSCAssert([value isKindOfClass:[NSURL class]], @"URL attribute must be an NSURL.");
+            NSCAssert(!value || [value isKindOfClass:[NSURL class]], @"If present, URL attribute must be an NSURL.");
             
             // Omit the Map Feedback link because the SDK already provides the appropriate UI for giving feedback.
             // Ideally we’d look for class="mapbox-improve-map", but NSAttributedString loses that information.
@@ -66,8 +62,14 @@ NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std:
                 return;
             }
             
-            // Omit redundant attribution strings.
             NSAttributedString *title = [attributedString attributedSubstringFromRange:range];
+            
+            // Omit whitespace-only strings.
+            if (![title.string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length) {
+                return;
+            }
+            
+            // Omit redundant attribution strings.
             for (MGLAttributionInfo *info in infos) {
                 if ([info.title.string containsString:title.string]) {
                     return;
