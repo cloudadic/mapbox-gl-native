@@ -16,7 +16,7 @@ static NSString * const MGLAttributionFeedbackURLString = @"https://www.mapbox.c
 
 @implementation MGLAttributionInfo
 
-- (instancetype)initWithTitle:(NSString *)title URL:(NSURL *)URL {
+- (instancetype)initWithTitle:(NSAttributedString *)title URL:(NSURL *)URL {
     if (self = [super init]) {
         _title = title;
         _URL = URL;
@@ -24,26 +24,32 @@ static NSString * const MGLAttributionFeedbackURLString = @"https://www.mapbox.c
     return self;
 }
 
-NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std::vector<std::string> htmlStrings) {
+NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std::vector<std::string> htmlStrings, NSString *css) {
     NSMutableArray *infos = [NSMutableArray array];
+    NSDictionary *options = @{
+        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+        NSCharacterEncodingDocumentAttribute: @(NSUTF8StringEncoding),
+    };
     for (auto htmlString : htmlStrings) {
-        NSData *htmlData = [@(htmlString.c_str()) dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *styledHTML = [NSString stringWithFormat:@"<style type='text/css'>%@</style>%@", css ?: @"", @(htmlString.c_str())];
+        NSData *htmlData = [styledHTML dataUsingEncoding:NSUTF8StringEncoding];
 #if TARGET_OS_IPHONE
         NSError *error;
         NSAttributedString *attributedString = [[NSAttributedString alloc] initWithData:htmlData
-                                                                                options:@{
-            NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
-            NSCharacterEncodingDocumentAttribute: @(NSUTF8StringEncoding),
-        }
+                                                                                options:options
                                                                      documentAttributes:nil
                                                                                   error:&error];
         if (!attributedString || error) {
             continue;
         }
 #else
-        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithHTML:htmlData documentAttributes:nil];
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithHTML:htmlData
+                                                                                options:options
+                                                                     documentAttributes:nil];
+        if (!attributedString) {
+            continue;
+        }
 #endif
-        NSString *string = attributedString.string;
         [attributedString enumerateAttribute:NSLinkAttributeName
                                      inRange:attributedString.mgl_wholeRange
                                      options:0
@@ -55,14 +61,15 @@ NS_ARRAY_OF(MGLAttributionInfo *) *MGLAttributionInfosFromHTMLStrings(const std:
             NSCAssert([value isKindOfClass:[NSURL class]], @"URL attribute must be an NSURL.");
             
             // Omit the Map Feedback link because the SDK already provides the appropriate UI for giving feedback.
+            // Ideally we’d look for class="mapbox-improve-map", but NSAttributedString loses that information.
             if ([value isEqual:[NSURL URLWithString:MGLAttributionFeedbackURLString]]) {
                 return;
             }
             
             // Omit redundant attribution strings.
-            NSString *title = [[string substringWithRange:range] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            NSAttributedString *title = [attributedString attributedSubstringFromRange:range];
             for (MGLAttributionInfo *info in infos) {
-                if ([info.title containsString:title]) {
+                if ([info.title.string containsString:title.string]) {
                     return;
                 }
             }

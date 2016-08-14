@@ -396,7 +396,11 @@ public:
     [attributionView removeConstraints:attributionView.constraints];
     
     // Convert attribution HTML strings in TileJSON into structured data.
-    NSArray *attributions = MGLAttributionInfosFromHTMLStrings(_mbglMap->getAttributions());
+    // Make the whole string mini by default.
+    // Force links to be black, because the default blue is distracting.
+    CGFloat miniSize = [NSFont systemFontSizeForControlSize:NSMiniControlSize];
+    NSString *css = [NSString stringWithFormat:@"html { font-size: %.1fpx; } a:link { color: black; }", miniSize];
+    NSArray *attributions = MGLAttributionInfosFromHTMLStrings(_mbglMap->getAttributions(), css);
     
     for (MGLAttributionInfo *info in attributions) {
         // For each attribution, add a borderless button that responds to clicks
@@ -426,17 +430,17 @@ public:
                                       attribute:previousView ? NSLayoutAttributeTrailing : NSLayoutAttributeLeading
                                      multiplier:1
                                        constant:8]];
-    }
-    
-    if (attributionView.subviews.count) {
         [attributionView addConstraint:
-         [NSLayoutConstraint constraintWithItem:attributionView.subviews.firstObject
+         [NSLayoutConstraint constraintWithItem:button
                                       attribute:NSLayoutAttributeTop
                                       relatedBy:NSLayoutRelationEqual
                                          toItem:attributionView
                                       attribute:NSLayoutAttributeTop
                                      multiplier:1
                                        constant:0]];
+    }
+    
+    if (attributionView.subviews.count) {
         [attributionView addConstraint:
          [NSLayoutConstraint constraintWithItem:attributionView
                                       attribute:NSLayoutAttributeTrailing
