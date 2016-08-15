@@ -4603,7 +4603,7 @@ mbgl::Duration MGLDurationInSeconds(NSTimeInterval duration)
         {
             [self enqueueAnnotationViewForAnnotationContext:annotationContext];
         }
-        else if (annotationView)
+        else
         {
             annotationView.center = [self convertCoordinate:annotationContext.annotation.coordinate toPointToView:self];
         }
