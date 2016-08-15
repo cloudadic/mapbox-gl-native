@@ -77,7 +77,6 @@ import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.constants.Style;
 import com.mapbox.mapboxsdk.exceptions.IconBitmapChangedException;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapbox.mapboxsdk.location.LocationListener;
 import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.widgets.CompassView;
@@ -185,24 +184,22 @@ public class MapView extends FrameLayout {
     }
 
     private void initialize(@NonNull Context context, @NonNull MapboxMapOptions options) {
+        if (isInEditMode()) {
+            // if we are in an editor mode we show an image of a map
+            LayoutInflater.from(context).inflate(R.layout.mapview_preview, this);
+            return;
+        }
+
         mInitialLoad = true;
         mOnMapReadyCallbackList = new ArrayList<>();
         mOnMapChangedListener = new CopyOnWriteArrayList<>();
         mMapboxMap = new MapboxMap(this);
         mIcons = new ArrayList<>();
         View view = LayoutInflater.from(context).inflate(R.layout.mapview_internal, this);
-
-        if (!isInEditMode()) {
-            setWillNotDraw(false);
-        }
+        setWillNotDraw(false);
 
         // Reference the TextureView
         SurfaceView surfaceView = (SurfaceView) view.findViewById(R.id.surfaceView);
-
-        // Check if we are in Android Studio UI editor to avoid error in layout preview
-        if (isInEditMode()) {
-            return;
-        }
 
         mNativeMapView = new NativeMapView(this);
 
@@ -1153,13 +1150,12 @@ public class MapView extends FrameLayout {
         mNativeMapView.removeAnnotations(ids);
     }
 
-    List<Marker> getMarkersInBounds(@NonNull LatLngBounds bbox) {
-        if (mDestroyed || bbox == null) {
+    List<Marker> getMarkersInRect(@NonNull RectF rect) {
+        if (mDestroyed || rect == null) {
             return new ArrayList<>();
         }
 
-        // TODO: filter in JNI using C++ parameter to getAnnotationsInBounds
-        long[] ids = mNativeMapView.getAnnotationsInBounds(bbox);
+        long[] ids = mNativeMapView.queryPointAnnotations(rect);
 
         List<Long> idsList = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
@@ -1179,13 +1175,12 @@ public class MapView extends FrameLayout {
         return new ArrayList<>(annotations);
     }
 
-    public List<MarkerView> getMarkerViewsInBounds(@NonNull LatLngBounds bbox) {
-        if (mDestroyed || bbox == null) {
+    public List<MarkerView> getMarkerViewsInRect(@NonNull RectF rect) {
+        if (mDestroyed || rect == null) {
             return new ArrayList<>();
         }
 
-        // TODO: filter in JNI using C++ parameter to getAnnotationsInBounds
-        long[] ids = mNativeMapView.getAnnotationsInBounds(bbox);
+        long[] ids = mNativeMapView.queryPointAnnotations(rect);
 
         List<Long> idsList = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
@@ -1506,6 +1501,10 @@ public class MapView extends FrameLayout {
     // Called when view is hidden and shown
     @Override
     protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
+        if (isInEditMode()) {
+            return;
+        }
+
         // Required by ZoomButtonController (from Android SDK documentation)
         if (mMapboxMap.getUiSettings().isZoomControlsEnabled() && (visibility != View.VISIBLE)) {
             mZoomButtonsController.setVisible(false);
@@ -1725,18 +1724,13 @@ public class MapView extends FrameLayout {
             PointF tapPoint = new PointF(e.getX(), e.getY());
             float toleranceSides = 4 * mScreenDensity;
             float toleranceTopBottom = 10 * mScreenDensity;
-            RectF tapRect = new RectF(tapPoint.x - mAverageIconWidth / 2 - toleranceSides,
-                    tapPoint.y - mAverageIconHeight / 2 - toleranceTopBottom,
-                    tapPoint.x + mAverageIconWidth / 2 + toleranceSides,
-                    tapPoint.y + mAverageIconHeight / 2 + toleranceTopBottom);
 
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(fromScreenLocation(new PointF(tapRect.left, tapRect.bottom)));
-            builder.include(fromScreenLocation(new PointF(tapRect.left, tapRect.top)));
-            builder.include(fromScreenLocation(new PointF(tapRect.right, tapRect.top)));
-            builder.include(fromScreenLocation(new PointF(tapRect.right, tapRect.bottom)));
-
-            List<Marker> nearbyMarkers = getMarkersInBounds(builder.build());
+            RectF tapRect = new RectF((tapPoint.x - mAverageIconWidth / 2 - toleranceSides) / mScreenDensity,
+                    (tapPoint.y - mAverageIconHeight / 2 - toleranceTopBottom) / mScreenDensity,
+                    (tapPoint.x + mAverageIconWidth / 2 + toleranceSides) / mScreenDensity,
+                    (tapPoint.y + mAverageIconHeight / 2 + toleranceTopBottom) / mScreenDensity);
+            
+            List<Marker> nearbyMarkers = getMarkersInRect(tapRect);
             long newSelectedMarkerId = -1;
 
             if (nearbyMarkers != null && nearbyMarkers.size() > 0) {
