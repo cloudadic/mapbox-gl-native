@@ -234,15 +234,6 @@ void Style::recalculate(float z, const TimePoint& timePoint, MapMode mode) {
     }
 }
 
-std::vector<const Source*> Style::getSources() const {
-    std::vector<const Source*> result;
-    result.reserve(sources.size());
-    for (const auto& source : sources) {
-        result.push_back(source.get());
-    }
-    return result;
-}
-
 Source* Style::getSource(const std::string& id) const {
     const auto it = std::find_if(sources.begin(), sources.end(), [&](const auto& source) {
         return source->getID() == id;
@@ -258,7 +249,10 @@ std::vector<std::string> Style::getAttributions() const {
         case SourceType::Vector:
         case SourceType::Raster: {
             style::TileSourceImpl* tileSource = static_cast<style::TileSourceImpl*>(source->baseImpl.get());
-            result.push_back(tileSource->getAttribution());
+            auto attribution = tileSource->getAttribution();
+            if (!attribution.empty()) {
+                result.push_back(attribution);
+            }
         }
             
         case SourceType::GeoJSON:

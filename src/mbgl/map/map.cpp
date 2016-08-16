@@ -746,10 +746,6 @@ AnnotationIDs Map::queryPointAnnotations(const ScreenBox& box) {
 
 #pragma mark - Style API
 
-std::vector<const style::Source*> Map::getSources() const {
-    return impl->style ? impl->style->getSources() : std::vector<const style::Source*>();
-}
-
 style::Source* Map::getSource(const std::string& sourceID) {
     return impl->style ? impl->style->getSource(sourceID) : nullptr;
 }
