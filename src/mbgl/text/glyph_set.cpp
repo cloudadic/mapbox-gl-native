@@ -116,7 +116,7 @@ void reverse(std::vector<PositionedGlyph> &positionedGlyphs, const std::map<uint
                     start->x = left + right - start->x;
                     auto sdf = sdfs.find(start->glyph);
                     if (sdf != sdfs.end()) {
-                        start->x -= sdf->second.metrics.advance;
+                        start->x += sdf->second.metrics.advance;
                     }
                 }
                 ++start;
