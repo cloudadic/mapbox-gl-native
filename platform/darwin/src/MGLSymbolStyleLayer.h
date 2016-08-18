@@ -155,7 +155,7 @@ typedef NS_ENUM(NSUInteger, MGLSymbolStyleLayerTextTranslateAnchor) {
 
  This property is measured in points.
  
- The default value of this property is 0 points on the top, 0 points on the right, 0 points on the bottom, and 0 points on the left. Set this property to `nil` to reset it to the default.
+ The default value of this property is `NSEdgeInsetsZero` or `UIEdgeInsetsZero`. Set this property to `nil` to reset it to the default.
  
  This property is only applied to the style if `iconImage` is non-`nil`, and `iconTextFit` is non-`nil`, and `textField` is non-`nil`. Otherwise, it is ignored.
  */
