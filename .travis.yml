@@ -43,6 +43,7 @@ install:
 before_script:
   - ccache --zero-stats
   - cmake --version
+  - npm --version
 script:
   - make linux
   - make test
